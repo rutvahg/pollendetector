@@ -1,0 +1,17 @@
+{
+  "name": "Pollen Check",
+  "short_name": "Pollen",
+  "description": "Photograph a pollen sample and see the pollen level.",
+  "start_url": "./#/capture",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F7F2",
+  "theme_color": "#2F6B3A",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

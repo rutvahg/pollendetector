@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2F6B3A">
+<meta name="description" content="Photograph a pollen sample and see the pollen level.">
+<title>Pollen Check</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Pollen Check">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+<div id="app">
+
+  <!-- ============ CAPTURE ============ -->
+  <section id="view-capture" class="view view-capture" aria-labelledby="capture-title">
+    <header class="appbar">
+      <div class="brand">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><circle cx="12" cy="5" r="2"/><circle cx="12" cy="19" r="2"/><circle cx="5" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+        <h1 id="capture-title">Pollen Check</h1>
+      </div>
+      <span class="chip" id="forecast-chip" hidden></span>
+    </header>
+    <p class="hint">Photograph your sample slide through the clip-on lens.</p>
+
+    <div class="viewport" id="viewport">
+      <video id="video" playsinline muted autoplay aria-label="Live camera preview"></video>
+      <span class="live-tag" id="live-tag" hidden>LIVE CAMERA</span>
+      <div class="guide" id="guide" hidden></div>
+      <p class="guide-text" id="guide-text" hidden>Fit the sample inside the box</p>
+
+      <div class="viewport-panel" id="camera-start">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <p>The camera is only used to photograph your sample. Photos stay on this phone unless you turn on sync.</p>
+        <button class="btn btn-primary" id="start-camera" type="button">Start camera</button>
+      </div>
+
+      <div class="viewport-panel" id="camera-error" hidden>
+        <h2 id="camera-error-title">Camera access is off</h2>
+        <p id="camera-error-text"></p>
+        <ol id="camera-help"></ol>
+        <div class="panel-buttons">
+          <button class="btn btn-light" id="retry-camera" type="button">Try again</button>
+          <button class="btn btn-outline-light" id="error-upload" type="button">Upload a photo instead</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="icon-btn" id="upload-btn" type="button" aria-label="Upload a photo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+      </button>
+      <input type="file" id="file-input" accept="image/*" hidden>
+      <button class="shutter" id="shutter" type="button" aria-label="Take picture" disabled><span></span></button>
+      <button class="icon-btn" id="torch" type="button" aria-label="Flashlight" aria-pressed="false" style="visibility:hidden">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg>
+      </button>
+    </div>
+    <p class="controls-caption">Upload photo · Take picture<span id="torch-caption" hidden> · Flashlight</span></p>
+  </section>
+
+  <!-- ============ REVIEW ============ -->
+  <section id="view-review" class="view" aria-labelledby="review-title" hidden>
+    <header class="appbar appbar-back">
+      <a class="back" href="#/capture" aria-label="Back to camera">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="titles"><h1 id="review-title">Check your photo</h1></div>
+    </header>
+    <div class="content">
+      <img id="review-img" class="photo" alt="The photo you just took">
+      <div id="review-quality" class="notice" role="status"></div>
+      <p id="review-lowres" class="help" hidden>This browser only gave a low-resolution image. For more detail, tap Upload photo on the camera screen and choose Take Photo to use your phone's camera app.</p>
+      <div class="row-buttons">
+        <button class="btn btn-secondary" id="retake" type="button">Retake</button>
+        <button class="btn btn-primary" id="analyze" type="button">Analyze</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RESULT ============ -->
+  <section id="view-result" class="view" aria-labelledby="result-title" hidden>
+    <header class="appbar appbar-back">
+      <a class="back" href="#/history" aria-label="Back to history">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+      </a>
+      <div class="titles">
+        <h1 id="result-title">Your result</h1>
+        <span class="sub" id="result-when"></span>
+      </div>
+      <button class="icon-plain" id="result-delete" type="button" aria-label="Delete this sample">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    </header>
+    <div class="content">
+      <canvas id="result-canvas" class="photo" role="img" aria-label="Your sample photo with detected grains circled"></canvas>
+      <label class="inline-check"><input type="checkbox" id="show-grains" checked> Show detected grains</label>
+
+      <section class="card level-card" id="level-card" data-level="Low">
+        <span class="eyebrow">POLLEN LEVEL</span>
+        <div class="level-line">
+          <div class="bars" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span class="level-text" id="level-text">–</span>
+        </div>
+        <p class="level-note" id="level-note" hidden></p>
+        <div class="chips">
+          <span class="chip chip-warm" id="count-chip"></span>
+          <span class="chip" id="conf-chip"></span>
+        </div>
+        <div class="scale" aria-hidden="true">
+          <span data-scale="Low">Low</span><span data-scale="Medium">Medium</span><span data-scale="High">High</span>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <span class="eyebrow">MAIN POLLEN TYPE</span>
+          <span class="tag">Phase 2</span>
+        </div>
+        <p class="muted">Not available yet. Telling tree, grass and weed pollen apart needs a trained model and roughly 200–400× magnification.</p>
+      </section>
+
+      <div class="info-row" id="result-forecast" hidden>
+        <span>Area forecast (your location)</span>
+        <strong id="result-forecast-value"></strong>
+      </div>
+
+      <div class="info-row info-row-white" id="result-sync" hidden></div>
+
+      <div class="row-buttons">
+        <a class="btn btn-primary" href="#/capture">Take another</a>
+        <a class="btn btn-secondary" href="#/history">View history</a>
+      </div>
+      <a class="text-link center" id="download-photo" href="#">Download photo</a>
+      <p class="disclaimer">For information only – not medical advice. Levels use the thresholds in Settings, which are not calibrated yet.</p>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY ============ -->
+  <section id="view-history" class="view" aria-labelledby="history-title" hidden>
+    <header class="appbar">
+      <h1 class="title" id="history-title">History</h1>
+      <div class="appbar-actions">
+        <button class="text-btn danger" id="clear-all" type="button">Clear all</button>
+      </div>
+    </header>
+    <section class="sync-bar" id="sync-bar"></section>
+    <ul class="history-list" id="history-list"></ul>
+    <div class="empty" id="history-empty" hidden>
+      <p>No samples yet.</p>
+      <a class="btn btn-primary" href="#/capture">Take your first photo</a>
+    </div>
+  </section>
+
+  <!-- ============ SETTINGS ============ -->
+  <section id="view-settings" class="view" aria-labelledby="settings-title" hidden>
+    <header class="appbar">
+      <h1 class="title" id="settings-title">Settings</h1>
+    </header>
+    <div class="content">
+
+      <h2 class="section-title">Sync to Google Drive &amp; Sheets</h2>
+      <section class="status-card" id="sync-status" role="status"></section>
+      <section class="card form">
+        <div class="field">
+          <label for="sync-url">Apps Script web app URL</label>
+          <input id="sync-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://script.google.com/macros/s/…/exec">
+        </div>
+        <div class="field">
+          <label for="sync-secret">Secret key</label>
+          <input id="sync-secret" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <span class="help">Saved on this phone only. Must match SYNC_SECRET in your script.</span>
+        </div>
+        <div class="inline">
+          <button class="btn btn-secondary" id="test-connection" type="button">Test connection</button>
+          <span id="test-result" class="status-text" role="status"></span>
+        </div>
+      </section>
+      <section class="card toggles">
+        <label class="toggle">
+          <span><span class="t">Auto-sync after each result</span><span class="d">Retries when you're back online</span></span>
+          <input type="checkbox" role="switch" id="auto-sync">
+        </label>
+        <label class="toggle">
+          <span><span class="t">Include photos</span><span class="d">Off = results only, no Drive upload</span></span>
+          <input type="checkbox" role="switch" id="include-photos">
+        </label>
+        <label class="toggle">
+          <span><span class="t">Include location</span><span class="d">Adds latitude and longitude to the Sheet</span></span>
+          <input type="checkbox" role="switch" id="include-location">
+        </label>
+      </section>
+      <button class="btn btn-primary btn-block" id="sync-now" type="button">Sync now</button>
+      <div class="row-buttons" id="google-links" hidden>
+        <a class="btn btn-secondary" id="open-folder" target="_blank" rel="noopener">Open Drive folder</a>
+        <a class="btn btn-secondary" id="open-sheet" target="_blank" rel="noopener">Open Sheet</a>
+      </div>
+      <p class="help">Deleting a sample in the app removes it from this phone only. Its photo and Sheet row stay in your Google account.</p>
+
+      <h2 class="section-title">Area forecast</h2>
+      <section class="card form">
+        <label class="toggle">
+          <span><span class="t">Show area pollen forecast</span><span class="d">Uses your location and the Google Pollen API</span></span>
+          <input type="checkbox" role="switch" id="forecast-enabled">
+        </label>
+        <div class="field">
+          <label for="forecast-key">Google Pollen API key</label>
+          <input id="forecast-key" type="password" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <span class="help">In Google Cloud Console, restrict this key to your site's address (HTTP referrer) and to the Pollen API only.</span>
+        </div>
+      </section>
+
+      <h2 class="section-title">Analysis</h2>
+      <section class="card form">
+        <p class="help">These numbers are starting guesses. Calibrate them against a pollen forecast or monitoring station over a few weeks.</p>
+        <div class="field-grid">
+          <div class="field">
+            <label for="field-area">Area inside the box (mm²)</label>
+            <input id="field-area" type="number" inputmode="decimal" min="0.01" step="any">
+          </div>
+          <div class="field">
+            <label for="min-sharpness">Minimum sharpness</label>
+            <input id="min-sharpness" type="number" inputmode="decimal" min="0" step="any">
+          </div>
+          <div class="field">
+            <label for="low-max">Low up to (grains/cm²)</label>
+            <input id="low-max" type="number" inputmode="decimal" min="0" step="any">
+          </div>
+          <div class="field">
+            <label for="medium-max">Medium up to (grains/cm²)</label>
+            <input id="medium-max" type="number" inputmode="decimal" min="0" step="any">
+          </div>
+          <div class="field">
+            <label for="min-diam">Smallest grain (% of frame)</label>
+            <input id="min-diam" type="number" inputmode="decimal" min="0.05" step="any">
+          </div>
+          <div class="field">
+            <label for="max-diam">Largest grain (% of frame)</label>
+            <input id="max-diam" type="number" inputmode="decimal" min="0.1" step="any">
+          </div>
+        </div>
+        <div class="field">
+          <label for="polarity">Grains look</label>
+          <select id="polarity">
+            <option value="auto">Detect automatically</option>
+            <option value="dark">Darker than the background</option>
+            <option value="light">Lighter than the background</option>
+          </select>
+        </div>
+        <button class="text-btn" id="reset-analysis" type="button">Reset analysis settings</button>
+      </section>
+
+      <h2 class="section-title">Data on this phone</h2>
+      <section class="card form">
+        <p class="help" id="storage-status"></p>
+        <button class="btn btn-secondary" id="export-history" type="button">Export history (JSON)</button>
+      </section>
+
+      <p class="disclaimer">Pollen Check v<span id="app-version"></span> · For information only – not medical advice.</p>
+    </div>
+  </section>
+
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Main">
+  <a href="#/capture" data-tab="capture">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    Capture
+  </a>
+  <a href="#/history" data-tab="history">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    History
+  </a>
+  <a href="#/settings" data-tab="settings">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    Settings
+  </a>
+</nav>
+
+<dialog id="confirm-dialog" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <h2 id="confirm-title"></h2>
+    <p id="confirm-text"></p>
+    <div class="row-buttons">
+      <button class="btn btn-secondary" value="cancel">Cancel</button>
+      <button class="btn btn-danger" value="ok" id="confirm-ok">Delete</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
